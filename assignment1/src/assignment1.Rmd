@@ -1,7 +1,9 @@
 ---
 title: "MH3510 Assignment 1"
+author: Pu Fanyi
+date: "`r Sys.Date()`"
 knit: (function(inputFile, encoding) {
-      out_dir <- "../output";
+      out_dir <- "..";
       rmarkdown::render(inputFile,
                         encoding=encoding,
                         output_dir=file.path(dirname(inputFile), out_dir));
@@ -10,11 +12,8 @@ knit: (function(inputFile, encoding) {
                         output_dir=file.path(dirname(inputFile), out_dir),
                         output_format = "pdf_document")})
 output:
-  html_document:
-    theme: journal
-    toc: true
-    toc_float: true
-  pdf_document: default
+  rmdformats::readthedown:
+    self_contained: no
 ---
 
 # Question
@@ -65,7 +64,7 @@ $$\hat{y} = -252.2971 + 8.5290X$$
 
 with $\mathcal{F}\approx 86.829$, $p\approx 1.434\times {10}^{-5}$ and $\mathcal{R}^2\approx 0.9156$.
 
-We can also plot the data and the regression line.
+We can plot the data and the regression line to check if we are correct.
 
 ```{r, out.width="70%", fig.align = 'center'}
 plot(data$X, data$y, 
@@ -76,7 +75,7 @@ abline(model, col = "red")
 
 We can also calculate the regression coefficients manually.
 
-We can calculate $\overline{X}$, $\overline{y}$ first.
+We can calculate $\overline{x}$, $\overline{y}$ first.
 
 ```{r}
 X_bar <- mean(data$X)
