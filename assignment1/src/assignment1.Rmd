@@ -1,0 +1,205 @@
+---
+title: "MH3510 Assignment 1"
+knit: (function(inputFile, encoding) {
+      out_dir <- "../output";
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir));
+      rmarkdown::render(inputFile,
+                        encoding=encoding,
+                        output_dir=file.path(dirname(inputFile), out_dir),
+                        output_format = "pdf_document")})
+output:
+  html_document:
+    theme: journal
+    toc: true
+    toc_float: true
+  pdf_document: default
+---
+
+# Question
+
+The following data indicate the relationship between the amount of $\beta$-erythroidine in an aqueous solution and the colorimeter reading of the turbidity:
+
+| Concentration | Colorimeter Reading |
+|:-------------:|:-------------------:|
+| 40            | 69                  |
+| 50            | 175                 |
+| 60            | 272                 |
+| 70            | 335                 |
+| 80            | 490                 |
+| 90            | 415                 |
+| 40            | 72                  |
+| 60            | 265                 |
+| 80            | 492                 |
+| 50            | 180                 |
+
+(a) Fit a simple regression to the data.
+
+(b) Comments on the model adequacy using $\mathcal{F}$ test and $\mathcal{R}^2$ statistics.
+
+# Solution
+
+## Data Preparation
+
+We saved the data in `data/data.csv`. Then we named the columns as $X$ and $y$.
+
+```{r}
+data <- read.csv("data/data.csv")
+names(data) <- c("X", "y")
+head(data)
+```
+
+## Simple Linear Regression
+
+We first fit the simple linear regression model using the `lm` function.
+
+```{r}
+model <- lm(y ~ X, data = data)
+summary(model)
+```
+
+We can see that the estimated regression line is
+
+$$\hat{y} = -252.2971 + 8.5290X$$
+
+with $\mathcal{F}\approx 86.829$, $p\approx 1.434\times {10}^{-5}$ and $\mathcal{R}^2\approx 0.9156$.
+
+We can also plot the data and the regression line.
+
+```{r, out.width="70%", fig.align = 'center'}
+plot(data$X, data$y, 
+     xlab = "Concentration", ylab = "Colorimeter Reading",
+     main = "Simple Linear Regression")
+abline(model, col = "red")
+```
+
+We can also calculate the regression coefficients manually.
+
+We can calculate $\overline{X}$, $\overline{y}$ first.
+
+```{r}
+X_bar <- mean(data$X)
+y_bar <- mean(data$y)
+cat(paste("X_bar =", X_bar, "\ny_bar =", y_bar))
+```
+
+Then we calculate $S_{xx}$, $S_{xy}$ and $S_{yy}$ by:
+
+$$
+\begin{aligned}
+S_{xx} &= \sum_{i=1}^{n} (x_i - \overline{x})^2\\
+S_{xy} &= \sum_{i=1}^{n} (x_i - \overline{x})(y_i - \overline{y})\\
+S_{yy} &= \sum_{i=1}^{n} (y_i - \overline{y})^2
+\end{aligned}
+$$
+
+```{r}
+S_xx <- sum((data$X - X_bar)^2)
+S_xy <- sum((data$X - X_bar) * (data$y - y_bar))
+S_yy <- sum((data$y - y_bar)^2)
+cat(paste("S_xx =", S_xx, "\nS_xy =", S_xy, "\nS_yy =", S_yy))
+```
+
+Then we can calculate the $\hat{\beta}_1$ and $\hat{\beta}_0$ by:
+
+$$
+\begin{cases}
+\hat{\beta}_1 = \frac{S_{xy}}{S_{xx}}\\
+\hat{\beta}_0 = \overline{y} - \hat{\beta}_1\overline{x}
+\end{cases}
+$$
+
+```{r}
+beta_1 <- S_xy / S_xx
+beta_0 <- y_bar - beta_1 * X_bar
+cat(paste("beta_1 =", beta_1, "\nbeta_0 =", beta_0))
+```
+
+So we can write
+
+$$
+\hat{y}=-252.2971 + 8.5290X
+$$
+
+Which is the same as the result from `lm` function.
+
+## ANOVA Table
+
+It is easy to see the $\mathcal{F}$ statistic and $\mathcal{R}^2$ statistic from the `summary` function. We can also calculate them manually.
+
+We can calculate $\mathrm{SSR}$ and $\mathrm{SSE}$ by:
+
+$$
+\begin{aligned}
+\mathrm{SSR} &= \sum_{i=1}^{n} (\hat{y}_i - \overline{y})^2\\
+\mathrm{SSE} &= \sum_{i=1}^{n} (y_i - \hat{y}_i)^2
+\end{aligned}
+$$
+
+```{r}
+y_hat <- beta_0 + beta_1 * data$X
+SSR <- sum((y_hat - y_bar)^2)
+SSE <- sum((data$y - y_hat)^2)
+cat(paste("SSR =", SSR, "\nSSE =", SSE))
+```
+
+And
+
+$$
+\begin{aligned}
+\mathrm{MS}_{\mathrm{Reg}}&=\mathrm{SSR}\\
+s^2&=\frac{1}{n-2}\mathrm{SSE}
+\end{aligned}
+$$
+
+```{r}
+MS_Reg <- SSR
+s2 <- SSE / 8
+cat(paste("MS_Reg =", MS_Reg, "\ns^2 =", s2))
+```
+
+After that, we can obtain the $\mathcal{F}$ statistic by
+
+$$
+\mathcal{F} = \frac{\mathrm{MS}_{\mathrm{Reg}}}{s^2}
+$$
+
+```{r}
+F <- MS_Reg / s2
+cat(paste("F =", F))
+```
+
+So we can calculate the $p$-value for $\mathcal{H}_0$ is $\beta_1=0$ is
+
+$$
+p=\mathbb{P}\left(X, y\mid \beta_1=0\right) = \int_{\mathcal{F}}^{+\infty} F_{1, 8}(f)\mathrm{d}f \approx 1.434\times {10}^{-5}
+$$
+
+```{r}
+p <- 1 - pf(86.829, 1, 8)
+cat(paste("p =", p))
+```
+
+The $p$ value is quite small, so we can reject the null hypothesis and say that there is a significant relationship between $X$ (concentration) and $y$ (colorimeter reading).
+
+For $\mathcal{R}^2$ statistic, we can calculate it by
+
+$$
+\mathcal{R}^2 = \frac{S_{xy}^2}{S_{xx}S_{yy}}
+$$
+
+```{r}
+R2 <- S_xy^2 / (S_xx * S_yy)
+cat(paste("R2 =", R2))
+```
+
+So the $\mathcal{R}^2$ statistic is about $0.9156$. Which means that there is a strong linear relationship between $X$ and $y$.
+
+## Conclusion
+
+For question (a), we have fitted a simple linear regression model to the data by:
+
+$$\hat{y} = -252.2971 + 8.5290X$$
+
+For question (b), we have tested the model adequacy using $\mathcal{F}$ test and $\mathcal{R}^2$ statistics. The $\mathcal{F}$ statistic is $86.829$ and the $p$ value is $1.434\times {10}^{-5}$, which means that there is a significant relationship between $X$ and $y$. The $\mathcal{R}^2$ statistic is $0.9156$, which means that there is a strong linear relationship between $X$ and $y$.
