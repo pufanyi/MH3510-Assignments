@@ -3,7 +3,7 @@ title: "MH3510 Assignment 1"
 author: Pu Fanyi
 date: "`r Sys.Date()`"
 knit: (function(inputFile, encoding) {
-      out_dir <- "..";
+      out_dir <- "../submission";
       rmarkdown::render(inputFile,
                         encoding=encoding,
                         output_dir=file.path(dirname(inputFile), out_dir));
@@ -12,8 +12,7 @@ knit: (function(inputFile, encoding) {
                         output_dir=file.path(dirname(inputFile), out_dir),
                         output_format = "pdf_document")})
 output:
-  rmdformats::readthedown:
-    self_contained: no
+  rmdformats::readthedown
 ---
 
 # Question
