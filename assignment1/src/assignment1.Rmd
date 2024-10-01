@@ -12,7 +12,10 @@ knit: (function(inputFile, encoding) {
                         output_dir=file.path(dirname(inputFile), out_dir),
                         output_format = "pdf_document")})
 output:
-  rmdformats::readthedown
+  rmdformats::readthedown:
+    self_contained: true
+  pdf_document:
+    number_sections: true
 ---
 
 # Question
